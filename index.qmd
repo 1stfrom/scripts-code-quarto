@@ -14,13 +14,22 @@ Note: Submitting your link in Canvas lets me know that you are ready for me to g
 
 # Modes of Execution
 
-Consider the 6 counting words examples in the [textbook module](https://srvanderplas.github.io/stat-computing-r-python/part-tools/04-scripts-notebooks.html#a-short-history-of-talking-to-computers) (they are in 3 separate 'your turn' sections). Look at the code, and then at the information provided for each example. What is different? What is the same? Write 2-3 sentences describing how script mode, interactive mode, and command-line mode differ in R and Python.
+Consider the 6 counting words examples in the [textbook module](https://srvanderplas.github.io/stat-computing-r-python/part-tools/03-scripts-notebooks.html#a-short-history-of-talking-to-computers) (they are in 3 separate 'your turn' sections). Look at the code, and then at the information provided for each example. What is different? What is the same? Write 2-3 sentences describing how script mode, interactive mode, and command-line mode differ in R and Python.
 
----
+----
+Python: Can modify a various of function and loop, that makes it sometimes looks tidier than R code, but may need more codes to do the similar thing that R can do. I don't have much experience using python to finish essential work, just used to adjust the dataset or import some tools that aren't available in R library.
 
-Replace this line of text with your 2-3 sentences about script-mode, interactive mode, and command-line mode in R and Python
+R: After all, R is designed to conduct statistic analysis work specifically, so it has various build-in function that can directly interact with a massive dataset like extract, replace, ignore or treat them. But there may be tons of cache data generated when continue signing new variables and in the end swallow the RAM in your local computer or HCP you requested.
 
----
+Script mode:
+Source python code output the result, while R didn't. Both of value are stored and assigned.
+
+Interactive mode:
+R treat the data as a vector([1] in the front), well-structured dataset, again, statistic work specifically. While in python, it just rudely give you a value 4.
+
+Command-line mode:
+Both of them reads input from command line arguments, in R after import the dataset, the freq of every words is stored in word_freq, and viewed the top 10 frequent words in that vector. In python, the loop only count and stored the count of the most frequent words with a loop.
+----
 
 
 # Programming with Variables
@@ -31,11 +40,15 @@ In this section, you'll demonstrate that you understand how to solve simple math
 
 $$a^2 + b^2 = c^2$$
 
-Use the chunk below to define variables $a$, $b$, and $c$, where you define values (of your choice) for $a$ and $b$. Based on the choice of $a$ and $b$, determine $c$ using the mathematical formula. You may need to find the square root function in R to make this work.
+Use the chunk below to define variables $a$, $b$, and $c$, where you define the values of $a$ and $b$, and $c$ is determined mathematically. You may need to find the square root function in R to make this work.
 
 ```{r pythagorean-theorem-r}
 # Your pythagorean theorem code goes here
-
+a <- 218
+b <- 114
+c = sqrt(a^2 + b^2)
+## result
+c
 ```
 
 ## Quadratic Formula in Python
@@ -47,11 +60,27 @@ Use the chunk below to define variables $a$, $b$, and $c$, and then define $x1$ 
 ```{python quad-formula-py}
 # Your quadratic formula code goes here
 
+def quadratic_formula(a,b,c):
+    cache = (((b**2)-(4*a*c))**0.5)
+    
+    # Calculating the two possible values of x using the quadratic formula
+    x1 = (-b + cache) / (2 * a)
+    x2 = (-b - cache) / (2 * a)
+    
+    return x1, x2
+
+a = 4
+b = -10
+c = 4
+
+x1, x2 = quadratic_formula(a, b, c)
+x1, x2
+
 ```
 
 # Debugging practice
 
-Look at the data frame below, which contains 3 columns: `Name`, `Salary`, and `Hire.Year`. You've read in this data from the [data file online](https://github.com/unl-statistics/stat850/blob/main/homework/02-data.tsv) and ideally, you want to plot `Hire.Year` on the x-axis and `Salary` on the y-axis (code to do this is provided).
+Look at the data frame below, which contains 3 columns: `Name`, `Salary`, and `Hire.Year`. You've read in this data from the [data file online](https://srvanderplas.github.io/stat151-homework/3-data.tsv) and ideally, you want to plot `Hire.Year` on the x-axis and `Salary` on the y-axis (code to do this is provided).
 
 Unfortunately, the data isn't reading in properly. Identify the problem, propose a solution, and try to implement your solution using functions on the R reference card.
 
@@ -76,9 +105,36 @@ salary
 
 The problem with the data is:
 
+```{r}
+print("The data at first row contain some strings and did not reflect its actual numeric data that it should be")
+```
+
 Here is how I solved the problem:
 
 ```{r cleaning-the-data-r}
 # Your implementation code goes here
+salary <- read.table("02-data.tsv", sep = "\t", header = T)
+library(ggplot2)
+# Treat variable as numeric value by ignore the strings
+salary$Salary <- as.numeric(gsub("[$,]", "", salary$Salary))
+# Here we go
+ggplot(salary, aes(x = Hire.Year, y = Salary, label = Name)) + 
+  geom_label()
 
+salary
+# linear model (Totally not necessary and inappropriate for this small sample size and uncleared dataset)
+model <- lm(Salary ~ Hire.Year, data = salary)
+p_value <- summary(model)$coefficients[2, 4]
+ggplot(salary, aes(x = Hire.Year, y = Salary, label = Name)) + 
+    geom_label(aes(label = Name), size = 2.3, nudge_x = 0.8, nudge_y = 0.2) + 
+    geom_point(color = "blue", size = 1) + 
+    geom_smooth(method = "lm", se = FALSE, color = "red") +
+    annotate("text", x = 2000, y = max(salary$Salary), 
+             label = paste("p-value =", round(p_value, 4)), 
+             color = "red", size = 5) + 
+    labs(title = "Salary vs Hire Year", x = "Hire Year", y = "Salary") +
+    theme(legend.key.size = unit(0.5, "cm"), 
+          legend.text = element_text(size = 8),  
+          plot.title = element_text(hjust = 0.5))  
+print("poor p-value")
 ```
